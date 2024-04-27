@@ -12,13 +12,12 @@ const bodyParser = require('body-parser');
 
 const configBodyParser = bodyParser.urlencoded({ extended: false })
 
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (err) {
+function isUrlValid(userInput) {
+  var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  if (res == null)
     return false;
-  }
+  else
+    return true;
 }
 
 let dbUrl = [];
@@ -51,8 +50,14 @@ app.get('/api/shorturl/:url', function (req, res) {
 app.post('/api/shorturl', function (req, res) {
   const input = req.body
 
-  //dns.lookup(input.url, (err, address, family) => {
-  if (isValidUrl(input.url)) {
+  console.log(input.url)
+
+  const removeHttp = input.url.replace(/https:\/\/|http:\/\//gi, '');
+
+  console.log(removeHttp)
+
+  // dns.lookup(input.url, (err, address, family) => {
+  if (isUrlValid(input.url)) {
     if (!dbUrl.includes(input.url))
       dbUrl.push(input.url)
     const db = {
@@ -64,15 +69,17 @@ app.post('/api/shorturl', function (req, res) {
 
     res.json(db)
   }
-  res.json({ error: "Invalid URL" })
+  else {
+    res.json({ error: "invalid url" })
+  }
 
 
   // }
 
-  //  )
+  //)
 
 
-})
+});
 
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
